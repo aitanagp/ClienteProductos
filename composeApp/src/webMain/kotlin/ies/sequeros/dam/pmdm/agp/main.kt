@@ -5,6 +5,10 @@ import androidx.compose.ui.window.ComposeViewport
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
+    startKoin {
+        modules(moduloInfraestructuran,moduloDominio, moduloAplicacion, moduloPresentacion)
+
+    }
     ComposeViewport {
         App()
     }
