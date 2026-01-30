@@ -19,23 +19,40 @@ import org.jetbrains.compose.resources.painterResource
 
 import clienteproductos.composeapp.generated.resources.Res
 import clienteproductos.composeapp.generated.resources.compose_multiplatform
+import ies.sequeros.dam.pmdm.agp.modelo.Categoria
 import ies.sequeros.dam.pmdm.agp.vista.componentes.ListadoProducto
+import ies.sequeros.dam.pmdm.agp.vista.componentes.PanelListadoCategorias
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
 fun App() {
-    //val repositorio: IDigimonRepositorio= RestDigimonRepositorio("https://digimon-api.vercel.app/api/digimon")
-    //val digimonViewModel: DigimonViewModel= DigimonViewModel(repositorio)
-    //estilo de la aplicacion
     MaterialTheme(
-        colorScheme =lightColorScheme(
+        colorScheme = lightColorScheme(
             primary = Color(0xFF006D3C),
             onPrimary = Color.White,
             secondary = Color(0xFF4CAF50),
             background = Color(0xFFF1FDF4),
         )
     ) {
-        ListadoProducto()
+        var categoriaSeleccionada by remember { mutableStateOf<Categoria?>(null) }
+
+        Column(modifier = Modifier.fillMaxSize()) {
+
+            PanelListadoCategorias(
+                categoriaActual = categoriaSeleccionada,
+                onCategoriaClick = { nuevaCat ->
+                    if (categoriaSeleccionada?.id == nuevaCat.id) {
+                        categoriaSeleccionada = null
+                    } else {
+                        categoriaSeleccionada = nuevaCat
+                    }
+                }
+            )
+
+            ListadoProducto(
+                categoriaFiltro = categoriaSeleccionada
+            )
+        }
     }
 }

@@ -33,7 +33,6 @@ fun PanelListadoProducto(
 ) {
     Surface(modifier = Modifier.fillMaxSize()) {
         if (items.isEmpty()) {
-            // Mensaje de carga o lista vacía
             Text(
                 text = "Cargando Productos...",
                 modifier = Modifier.padding(16.dp),
@@ -41,13 +40,12 @@ fun PanelListadoProducto(
             )
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                // Usamos el ID como clave si existe, si no el nombre
                 items(items, key = { it.id ?: it.nombre }) { item ->
                     ListItem(
                         headlineContent = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
-                                    imageVector = Icons.Default.ShoppingBag, // Icono más apropiado
+                                    imageVector = Icons.Default.ShoppingBag,
                                     contentDescription = "Producto",
                                     modifier = Modifier.size(24.dp),
                                     tint = MaterialTheme.colorScheme.primary
@@ -62,16 +60,14 @@ fun PanelListadoProducto(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onSelect(item) }
-                            .padding(horizontal = 8.dp, vertical = 4.dp), // Un poco de margen extra
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
                         supportingContent = {
-                            // Mostramos el precio y la descripción
                             Text(
                                 text = "${item.precio} € - ${item.descripcion}",
                                 maxLines = 1,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         },
-                        // Resaltamos el elemento si coincide con el seleccionado
                         tonalElevation = if (item.nombre == selected?.nombre) 4.dp else 0.dp
                     )
                 }

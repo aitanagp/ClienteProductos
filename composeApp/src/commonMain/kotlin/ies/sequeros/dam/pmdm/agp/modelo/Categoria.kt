@@ -3,12 +3,9 @@ package ies.sequeros.dam.pmdm.agp.modelo
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Producto(
+data class Categoria(
     val id: String? = null,
     val nombre: String,
     val descripcion: String,
-    val categoria: String,
-    val precio: Double,
-    val activo: Boolean,
-    val imagen: String? = null
+    val activo: Boolean
 )

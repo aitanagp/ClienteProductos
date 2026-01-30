@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import ies.sequeros.dam.pmdm.agp.modelo.Categoria
 import ies.sequeros.dam.pmdm.agp.modelo.Producto
 import ies.sequeros.dam.pmdm.agp.vista.ProductoViewModel
 import kotlinx.coroutines.launch
@@ -21,33 +22,40 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun ListadoProducto() {
-    //injeccion de dependencias
-    val vm: ProductoViewModel= koinViewModel ()
+fun ListadoProducto(
+    categoriaFiltro: Categoria?
+) {
+    val vm: ProductoViewModel = koinViewModel()
     val navigator = rememberListDetailPaneScaffoldNavigator<Nothing>()
-    // estado de selección
     var selectedItem by remember { mutableStateOf<Producto?>(null) }
-    val items=vm.items.collectAsState()
-    //corrutina
+    val items by vm.items.collectAsState()
     val scope = rememberCoroutineScope()
 
-    // al seleccionar un elemento: cargar borrador desde el contenido
+    val productosFiltrados = remember(items, categoriaFiltro) {
+        if (categoriaFiltro == null) {
+            items
+        } else {
+            items.filter { it.categoria == categoriaFiltro.id }
+        }
+    }
+
     fun onSelect(item: Producto) {
         selectedItem = item
         scope.launch {
             navigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
         }
     }
-    //tamaño de la ventana, para mostrar o no el botón de back
-    val windowInfo=currentWindowAdaptiveInfo()
+
+    val windowInfo = currentWindowAdaptiveInfo()
     val directive = calculatePaneScaffoldDirective(windowInfo)
-    val mostrarBotonAtras= directive.maxHorizontalPartitions == 1
+    val mostrarBotonAtras = directive.maxHorizontalPartitions == 1
+
     ListDetailPaneScaffold(
         directive = navigator.scaffoldDirective,
         value = navigator.scaffoldValue,
         listPane = {
             PanelListadoProducto(
-                items = items.value,
+                items = productosFiltrados,
                 selected = selectedItem,
                 onSelect = ::onSelect
             )
@@ -55,11 +63,7 @@ fun ListadoProducto() {
         detailPane = {
             DetalleProducto(
                 item = selectedItem,
-                onBack = {
-                    scope.launch {
-                        navigator.navigateBack()
-                    }
-                },
+                onBack = { scope.launch { navigator.navigateBack() } },
                 mostrarBotonAtras
             )
         },
