@@ -5,5 +5,12 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val moduloPresentacion = module {
-    viewModel {  ProductoViewModel(get()) }
+    viewModel {
+        ProductoViewModel(
+            getAllProductosUseCase = get(),
+            categoriaRepository = get(),
+            deleteProductoUseCase = get(),
+            productoRepository = get()
+        )
+    }
 }

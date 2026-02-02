@@ -1,5 +1,12 @@
 package ies.sequeros.dam.pmdm.agp.vista.componentes
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
@@ -13,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import ies.sequeros.dam.pmdm.agp.modelo.Categoria
 import ies.sequeros.dam.pmdm.agp.modelo.Producto
 import ies.sequeros.dam.pmdm.agp.vista.ProductoViewModel
@@ -22,27 +30,26 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun ListadoProducto(
-    categoriaFiltro: Categoria?
-) {
+fun ListadoProducto() {
     val vm: ProductoViewModel = koinViewModel()
+    val items by vm.items.collectAsState()
+    val categoriaSeleccionada by vm.categoriaSeleccionada.collectAsState()
+
     val navigator = rememberListDetailPaneScaffoldNavigator<Nothing>()
     var selectedItem by remember { mutableStateOf<Producto?>(null) }
-    val items by vm.items.collectAsState()
+    var mostrarFormularioProducto by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-
-    val productosFiltrados = remember(items, categoriaFiltro) {
-        if (categoriaFiltro == null) {
-            items
-        } else {
-            items.filter { it.categoria == categoriaFiltro.id }
-        }
-    }
 
     fun onSelect(item: Producto) {
         selectedItem = item
-        scope.launch {
-            navigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
+        scope.launch { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail) }
+    }
+
+    fun onDelete(item: Producto) {
+        vm.borrarProducto(item)
+        if (selectedItem == item) {
+            selectedItem = null
+            scope.launch { navigator.navigateBack() }
         }
     }
 
@@ -54,18 +61,43 @@ fun ListadoProducto(
         directive = navigator.scaffoldDirective,
         value = navigator.scaffoldValue,
         listPane = {
-            PanelListadoProducto(
-                items = productosFiltrados,
-                selected = selectedItem,
-                onSelect = ::onSelect
-            )
+            Scaffold(
+                floatingActionButton = {
+                    if (categoriaSeleccionada != null) {
+                        FloatingActionButton(onClick = { mostrarFormularioProducto = true }) {
+                            Icon(Icons.Default.Add, contentDescription = "Añadir Producto")
+                        }
+                    }
+                }
+            ) { padding ->
+                Box(modifier = Modifier.padding(padding)) {
+                    PanelListadoProducto(
+                        items = items,
+                        selected = selectedItem,
+                        onSelect = ::onSelect,
+                        onDelete = ::onDelete
+                    )
+                }
+            }
         },
         detailPane = {
             DetalleProducto(
                 item = selectedItem,
                 onBack = { scope.launch { navigator.navigateBack() } },
-                mostrarBotonAtras
+                mostrarBotonAtras = mostrarBotonAtras
             )
         },
     )
+
+    if (mostrarFormularioProducto) {
+        val catId = categoriaSeleccionada?.id ?: ""
+        FormularioProducto(
+            categoriaId = catId,
+            onDismiss = { mostrarFormularioProducto = false },
+            onConfirm = { nuevoProd ->
+                vm.crearProducto(nuevoProd)
+                mostrarFormularioProducto = false
+            }
+        )
+    }
 }

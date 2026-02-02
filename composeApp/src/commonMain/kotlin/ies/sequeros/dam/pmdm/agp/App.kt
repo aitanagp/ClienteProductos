@@ -20,9 +20,11 @@ import org.jetbrains.compose.resources.painterResource
 import clienteproductos.composeapp.generated.resources.Res
 import clienteproductos.composeapp.generated.resources.compose_multiplatform
 import ies.sequeros.dam.pmdm.agp.modelo.Categoria
+import ies.sequeros.dam.pmdm.agp.vista.ProductoViewModel
 import ies.sequeros.dam.pmdm.agp.vista.componentes.ListadoProducto
-import ies.sequeros.dam.pmdm.agp.vista.componentes.PanelListadoCategorias
+import ies.sequeros.dam.pmdm.agp.vista.componentes.PanelListadoCategoria
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 @Preview
@@ -35,24 +37,25 @@ fun App() {
             background = Color(0xFFF1FDF4),
         )
     ) {
-        var categoriaSeleccionada by remember { mutableStateOf<Categoria?>(null) }
+        val vm = koinViewModel<ProductoViewModel>()
+
+        val listaCategorias by vm.categorias.collectAsState()
+        val categoriaSeleccionada by vm.categoriaSeleccionada.collectAsState()
 
         Column(modifier = Modifier.fillMaxSize()) {
 
-            PanelListadoCategorias(
+            PanelListadoCategoria(
+                categorias = listaCategorias,
                 categoriaActual = categoriaSeleccionada,
                 onCategoriaClick = { nuevaCat ->
                     if (categoriaSeleccionada?.id == nuevaCat.id) {
-                        categoriaSeleccionada = null
+                        vm.filtrarPorCategoria(null)
                     } else {
-                        categoriaSeleccionada = nuevaCat
+                        vm.filtrarPorCategoria(nuevaCat)
                     }
                 }
             )
-
-            ListadoProducto(
-                categoriaFiltro = categoriaSeleccionada
-            )
+            ListadoProducto()
         }
     }
 }
